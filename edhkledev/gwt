@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ -z $2 ]; then
+   echo "usage: $0 which expr"
+   exit -1
+fi
+
+case "$1" in
+	which)
+		for i in `ls -1 /usr/local/java/gwt-2.5.1/gwt*.jar`
+		do 
+		   echo "$i: " && jar tvf $i | grep $2
+		done
+		;;
+	*)
+		echo "usage: $0 { which } expr"
+		exit -1
+		;;
+esac
+
+exit 0
+

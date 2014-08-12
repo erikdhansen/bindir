@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/usr/bin/git daemon --reuseaddr --base-path=/home/ehansen/ems --export-all --verbose --enable=receive-pack
+

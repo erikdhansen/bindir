@@ -1,0 +1,22 @@
+#!/bin/bash
+
+case "$1" in
+	connect)
+		ssh -i ~/.ssh/MyKeyPair.pem ubuntu@ec2-54-85-162-195.compute-1.amazonaws.com &
+		;;
+	start)
+		ec2-run-instances i-b82053ea -t t1.micro -g sg-f6275393
+		;;
+	stop)
+		ec2-stop-instances i-b82053ea && sleep 5 && $0 show
+		;;
+	show)
+		ec2-describe-instances
+		;;
+	*)
+		echo "usage $0 { start | stop | show }"
+		exit -1
+esac
+
+exit 0
+

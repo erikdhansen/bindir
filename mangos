@@ -1,0 +1,30 @@
+#!/bin/bash
+
+case "$1" in
+	cataclysm)
+		mkdir cataclysm && cd cataclysm || echo "Error creating download directory" && exit -1
+		MANGOS=mangosthree
+		;;
+	wotlk)
+		mkdir wotlk && cd wotlk || echo "Error creating download directory" && exit -1
+		MANGOS=mangostwo
+		;;
+	tbc)
+		mkdir tbc && cd tbc || echo "Error creating download directory" && exit -1
+		MANGOS=mangosone
+		;;
+	vanilla)
+		mkdir vanilla && cd vanilla || echo "Error creating download directory" && exit -1
+		MANGOS=mangoszero
+		;;
+	*)
+		echo "usage: mangos { vanilla | tbc | wotlk | cataclysm }"
+		exit -1
+esac
+
+git clone https://github.com/$MANGOS/server.git
+git clone https://github.com/$MANGOS/database.git
+git clone https://github.com/$MANGOS/EventAI.git
+git clone https://github.com/$MANGOS/scripts.git
+git clone https://github.com/$MANGOS/tools.git
+

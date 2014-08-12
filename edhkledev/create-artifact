@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+case "$#" in
+	3)
+		GROUPID=$1
+		ARTIFACTID=$2
+		VERSION=$3
+	 	URL=http://edhkledev.local:8888/nexus/content/groups/public	
+		mvn archetype:generate -DgroupId=$GROUPID -DartifactId=$ARTIFACTID -DarchetypeRepository=$URL -DarchetypeVersion=$VERSION -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+		;;
+	*)
+		echo "usage: create-artifact groupId artifactId version"
+		exit -1
+		;;
+esac
+
+
+exit 0
+
+

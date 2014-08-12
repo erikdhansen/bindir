@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ -z $2 ]; then
+   echo "usage: $0 which expr"
+   exit -1
+fi
+
+case "$1" in
+	addjar)
+		echo "Adding $2 to vaadin-7.2.5.zip..."
+		cp /usr/local/java/vaadin/lib/$2 ~/gwt-vaadin/vaadin-7.2.5/ && \
+		cp /usr/local/java/vaadin/lib/$2 ~/ems/vaadin/build/elementcenter/3rdParty/vaadin-7.2.5/ && \
+		cd ~/gwt-vaadin && \
+		zip -r ~/ems/vaadin/3rdPartySource/centeredlogic/elementcenter/3rdParty.zips/vaadin-7.2.5.zip vaadin-7.2.5/
+		echo "Done."
+		;;
+	libwhich)
+		for i in `ls -1 /usr/local/java/vaadin/lib/*.jar`
+		do
+		   echo "$i: " && jar tvf $i | grep $2
+		done
+		;;
+	which)
+		for i in `ls -1 /usr/local/java/vaadin/vaadin*.jar`
+		do 
+		   echo "$i: " && jar tvf $i | grep $2
+		done
+		;;
+	*)
+		echo "usage: $0 { which } expr"
+		exit -1
+		;;
+esac
+
+exit 0
+

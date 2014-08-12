@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ $EUID != 0 ]; then
+   echo "You must be root to run this script."
+   exit -1
+fi
+
+if [ -z $1 ]; then
+   echo "usage: $0 jdk-version"
+   exit -1
+fi
+
+JDK=$1
+
+if [ ! -d $JDK ]; then
+   echo "/usr/local/$JDK is not a Java installation."
+   exit -1
+fi
+
+echo "Installing $JDK as default Java..."
+update-alternatives --install /usr/bin/java java /usr/local/java/$JDK/bin/java 100
+update-alternatives --install /usr/bin/javac javac /usr/local/java/$JDK/bin/javac 100
+
+echo "Checking Java installation..."
+update-alternatives --display java
+update-alternatives --display javac

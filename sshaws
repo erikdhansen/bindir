@@ -1,0 +1,12 @@
+#!/bin/bash
+
+case "$1" in
+	admin)
+		ssh -i ~/.ssh/MyKeyPair.pem ubuntu@ec2-54-85-162-195.compute-1.amazonaws.com
+		;;
+	*)
+		ssh ehansen@pillbox.edhkle.com
+		;;
+esac
+
+exit 0

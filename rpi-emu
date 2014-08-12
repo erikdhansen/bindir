@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/cygdrive/c/Program\ Files/qemu/qemu-system-arm.exe -kernel kernel-qemu -cpu arm1176 -m256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw init=/bin/bash" -hda /cygdrive/c/ISO/Archive/Other/rpi-raspbian-armhf.img

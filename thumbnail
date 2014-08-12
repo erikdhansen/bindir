@@ -1,0 +1,11 @@
+#!/bin/bash
+
+RES=$1"x"$1
+shift;
+
+if [ -z $RES ]; then
+   echo "usage: thumbnail <# pixels> subdir input file .."
+   exit -1
+fi
+
+mogrify -resize $RES -gravity center -extent $RES -format jpg $@

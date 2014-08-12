@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [ -z $CATALINA_HOME ]; then
+	CATALINA_HOME=/cygdrive/c/apache-tomcat-7.0.53
+fi
+
+echo "Starting Tomcat: CATALINA_HOME=$CATALINA_HOME"
+
+case "$1" in
+	start)
+		echo "Starting Tomcat: CATALINA_HOME=$CATALINA_HOME"
+		$CATALINA_HOME/bin/startup.bat
+		;;
+	stop)
+		echo "Starting Tomcat: CATALINA_HOME=$CATALINA_HOME"
+		$CATALINA_HOME/bin/shutdown.bat
+		;;
+	restart)
+		echo "Starting Tomcat: CATALINA_HOME=$CATALINA_HOME"
+		$0 stop && $0 start
+		;;
+	version)
+		echo "Tomcat Version Info: CATALINA_HOME=$CATALINA_HOME"
+		$CATALINA_HOME/bin/version.bat
+		;;
+	*)
+		echo "usage: tomcat {start|stop|restart|version}"
+		exit -1;
+esac
+
+exit 0
+

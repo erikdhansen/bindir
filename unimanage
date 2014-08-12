@@ -1,0 +1,272 @@
+#!/bin/bash
+
+#  unimanage
+#
+#  Spin off of workspace script to create a unimanage
+#  workspace -- similar in breakdown, but much simpler
+#  than unicloud workspace script
+#
+#  Created by Erik Hansen on 4/21/14.
+#
+
+SVN_REPO="https://scm.parallelwireless.net:18080/svn"
+UNIMANAGE_SRC_URL="UniManageApplications/"
+T3RD_PARTY_REPO="UniManage3rdPartySource/"
+
+DEFAULT_BRANCH="branches/rel_3.0"
+
+usage()
+{
+   echo "usage: unimanage <workspace_name> { create | delete | update | workon }"
+   exit 1
+}
+
+function removeFromPath() {
+   export PATH=$(echo $PATH | sed -E -e "s;:$1;;" -e "s;$1:?;;")
+}
+
+set_jdk() {
+   if [ `uname` == "Darwin" ]; then
+      if [ $# -ne 0 ]; then
+         removeFromPath '/System/Library/Frameworks/JavaVM.framework/Home/bin'
+         if [ -n "${JAVA_HOME+x}" ]; then
+            removeFromPath $JAVA_HOME
+         fi
+         export JAVA_HOME=`/usr/libexec/java_home -v $@`
+         export PATH=$JAVA_HOME/bin:$PATH
+      fi
+   else
+      if [ `uname` == "Linux" ]; then
+         for i in `update-alternatives --list java`
+         do
+            if [[ "$JAVA_VERSION" =~ "$1"+ ]]; then
+               echo "Found Java JDK 1.6 JVM: $JAVA_VERSION"
+               sudo update-alternatives --set java $i
+            else
+               echo "Found Java $JAVA_VERSION...this is not the Java you are looking for."
+            fi
+	    sudo update-alternatives --set java `update-alternatives --list java | grep java-6` && export JAVA_HOME=/usr/lib/jvm/java-6-oracle
+         done
+      else
+         if [ `uname` == "CYGWIN_NT-6.1" ]; then
+            export JAVA_HOME=`cygpath --windows /cygdrive/c/Program\ Files/Java/jdk1.6.0_45` && export PATH="$JAVA_HOME"/bin:$PATH
+	 else
+           if [ `uname` == "SunOS" ]; then
+             export JAVA_HOME=/usr/jdk/instances/jdk1.6.0 && export PATH=$JAVA_HOME/bin:$PATH
+	   fi
+         fi
+      fi
+   fi
+}
+
+ws_exists()
+{
+    [[ -d "$WS" ]] && return 0 || return 1
+}
+
+delete_ws()
+{
+    echo "Deleting workspace..."
+    if ( ! ws_exists ) then
+        echo No workspace:$WS found in $(pwd)
+        exit 1
+    fi
+    rm -rf $WS
+}
+
+update_ws()
+{
+    echo "Updating workspace..."
+    if ( ! ws_exists ) then
+        echo No workspace:$WS found in $(pwd)
+        exit 1;
+    fi
+    echo "Updating UniManage3rdPartySource..."
+    cd $WS/3rdPartySource && svn update && cd ..
+}
+
+create_ws()
+{
+    while [ -z $REQUESTED_BRANCH ]
+    do
+	read -p "Branch name? [branches/rel_3.0] " REQUESTED_BRANCH
+	if [ $REQUESTED_BRANCH == "" ]; then
+	   REQUESTED_BRANCH=$DEFAULT_BRANCH
+	fi
+    done		
+    echo "Creating workspace from branch: $REQUESTED_BRANCH"
+    if ( ws_exists ) then
+       echo workspace:$WS already exists in $(pwd)
+       exit 1;
+    fi
+    mkdir $WS
+    svn co $SVN_REPO/$T3RD_PARTY_REPO/$REQUESTED_BRANCH $WS/3rdPartySource
+}
+
+workon_ws()
+{
+    echo "Setting up to work on workspace..."
+    if ( ! ws_exists ) then
+        echo No workspace:$WS found in $(pwd)
+        exit 1
+    fi
+
+    echo "Setting JDK version to acceptable 1.6 variant..."
+    set_jdk 1.6
+    echo "JAVA_HOME set to $JAVA_HOME"
+
+    echo "Setting required Element Center Environment Variables"
+    
+    if [ `uname` == "Darwin" ]; then
+       export DEVROOT=$(cd "$(dirname "$WS")"; pwd)
+    else
+       if [ `uname` == "Linux" ] || [ `uname` == "SunOS" ]; then
+          export DEVROOT=`readlink -f $WS`
+       else if [ `uname` == "CYGWIN_NT-6.1" ]; then
+          # Hack Alert -- can't figure it out so let's say PWD + WS = abs ws path
+          export DEVROOT=`cygpath --windows $(pwd)/$WS`
+	 fi
+       fi
+    fi
+    
+    echo "Using directory $DEVROOT as workspace path"
+    export ELEMENTS_SOURCE=$DEVROOT/3rdPartySource/centeredlogic/elementcenter
+    export ELEMENTS_BUILD=$DEVROOT/build
+    export ELEMENTS_RUN=$DEVROOT/run
+    export ELEMENTS_DIST=$DEVROOT/dist
+	export UNIMANAGE_ROOT=$DEVROOT/unimanage
+	
+    export CL_COMMONS_BUILD=$ELEMENTS_BUILD/commons
+    export NETCONFX_BUILD=$ELEMENTS_BUILD/netconfx
+    export CATALINA_BASE=$ELEMENTS_RUN/3rdParty/apache-tomcat-6.0.29
+    export CATALINA_HOME=$ELEMENTS_RUN/3rdParty/apache-tomcat-6.0.29
+    # Set pretty prompt so we know we're in "dev land"
+    export PROMPT_COMMAND="echo -n EMS\>\>\> "
+    cd $UNIMANAGE_ROOT
+    #export PS1="\[\033[1;34m\][\h]\[\033[1;37m\]:\[\033[1;31m\]\w \[\033[1;37m\][emsdev]\[\033[0m\]$ " &&  bash 
+}
+
+project_exists()
+{
+    [[ -d "$WS/$PROJ" ]] && return 0 || return 1
+}
+
+delete_project()
+{
+    echo "Deleting Project...."
+    if ( ! project_exists ) then
+        echo No project:$WS/$PROJ found in `pwd`
+        exit 1;
+    fi
+    rm -rf $WS/$PROJ
+}
+
+create_project()
+{
+    while [ -z $REQUESTED_BRANCH ]
+    do
+		REQUESTED_BRANCH=""
+        read -p "Branch name? [branches/rel_3.0] " REQUESTED_BRANCH
+        if [ $REQUESTED_BRANCH == "" ]; then
+           REQUESTED_BRANCH=$DEFAULT_BRANCH
+        fi
+    done
+    echo "Creating workspace from branch: $REQUESTED_BRANCH"
+
+    echo "Creating Project...."
+    if ( project_exists ) then
+        echo project:$WS/$PROJ already exists in `pwd`
+        exit 1;
+    fi
+    # mkdir $WS/$PROJ
+    svn co $COMP_URL/$REQUESTED_BRANCH $WS/
+}
+
+update_project()
+{
+    echo "Updating Project:$WS/$PROJ...."
+    if ( ! project_exists ) then
+        echo No project:$WS/$PROJ found in `pwd`
+        exit 1;
+    fi
+
+    cd $WS/$PROJ && svn update && cd ..
+}
+
+handle_workspace()
+{
+    echo Workspace:$WS Processing...$OPER
+    case "$OPER" in
+        "create")
+            create_ws
+            ;;
+        "delete")
+            delete_ws
+            ;;
+        "update")
+            update_ws
+            ;;
+        "workon")
+            workon_ws && bash
+            ;;
+        *)
+            usage
+            ;;
+    esac
+}
+
+handle_project()
+{
+    echo "Project Processing..."
+    if ( ! ws_exists ) then
+        echo No workspace:$WS found in $(pwd)
+        usage
+        exit 1
+    fi
+
+    if [ "$PROJ_TAG" != "project" ]; then
+        usage
+        exit 1
+    fi
+
+    case "$OPER" in
+        "create")
+            create_project
+            ;;
+        "delete")
+            delete_project
+            ;;
+        "update")
+            update_project
+            ;;
+        *)
+            usage
+            ;;
+    esac
+}
+
+case "$#" in
+    2 )
+        WS=$1
+        OPER=$2
+        handle_workspace
+		PROJ_TAG="project"
+		PROJ="unimanage"
+		COMP_URL=$SVN_REPO/$UNIMANAGE_SRC_URL
+		if [ $OPER == "create" ] || [ $OPER == "update" ] || [ $OPER = "delete" ]; then
+		   handle_project
+		   if [ $OPER != "delete" ]; then
+		      $0 $WS workon
+		   fi
+		fi
+        ;;
+    * )
+        usage
+        exit 1
+        ;;
+esac
+
+export UNIMANAGE_WS=$WS
+
+echo "All done!!!"
+
