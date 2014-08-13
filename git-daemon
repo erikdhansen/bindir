@@ -1,4 +1,11 @@
 #!/bin/bash
 
-/usr/bin/git daemon --reuseaddr --base-path=/cygdrive/d/git/parallel --export-all --verbose --enable=receive-pack
+if [ `uname` == 'Linux' ]; then
+   /usr/bin/git daemon --reuseaddr --base-path=/home/ehansen/ems --export-all --verbose --enable=receive-pack
+else
+   if [ `uname` == 'CYGWIN_NT-6.1' ]; then
+      /usr/bin/git daemon --reuseaddr --base-path=/cygdrive/d/git/parallel --export-all --verbose --enable=receive-pack
+   fi
+fi
+
 

@@ -82,7 +82,7 @@ update_ws()
         exit 1;
     fi
     echo "Updating UniManage3rdPartySource..."
-    cd $WS/3rdPartySource && svn update && cd ..
+    cd $WS/3rdPartySource && svn update && cd ../..
 }
 
 create_ws()
@@ -92,9 +92,11 @@ create_ws()
 	read -p "Branch name? [branches/rel_3.0] " REQUESTED_BRANCH
 	if [ $REQUESTED_BRANCH == "" ]; then
 	   REQUESTED_BRANCH=$DEFAULT_BRANCH
+           echo "Requested branch: $REQUESTED_BRANCH"
 	fi
     done		
     echo "Creating workspace from branch: $REQUESTED_BRANCH"
+
     if ( ws_exists ) then
        echo workspace:$WS already exists in $(pwd)
        exit 1;
@@ -134,7 +136,7 @@ workon_ws()
     export ELEMENTS_BUILD=$DEVROOT/build
     export ELEMENTS_RUN=$DEVROOT/run
     export ELEMENTS_DIST=$DEVROOT/dist
-	export UNIMANAGE_ROOT=$DEVROOT/unimanage
+    export UNIMANAGE_ROOT=$DEVROOT/unimanage
 	
     export CL_COMMONS_BUILD=$ELEMENTS_BUILD/commons
     export NETCONFX_BUILD=$ELEMENTS_BUILD/netconfx
@@ -172,7 +174,6 @@ create_project()
         fi
     done
     echo "Creating workspace from branch: $REQUESTED_BRANCH"
-
     echo "Creating Project...."
     if ( project_exists ) then
         echo project:$WS/$PROJ already exists in `pwd`
@@ -250,15 +251,15 @@ case "$#" in
         WS=$1
         OPER=$2
         handle_workspace
-		PROJ_TAG="project"
-		PROJ="unimanage"
-		COMP_URL=$SVN_REPO/$UNIMANAGE_SRC_URL
-		if [ $OPER == "create" ] || [ $OPER == "update" ] || [ $OPER = "delete" ]; then
-		   handle_project
-		   if [ $OPER != "delete" ]; then
-		      $0 $WS workon
-		   fi
-		fi
+	PROJ_TAG="project"
+	PROJ="unimanage"
+	COMP_URL=$SVN_REPO/$UNIMANAGE_SRC_URL
+	if [ $OPER == "create" ] || [ $OPER == "update" ] || [ $OPER = "delete" ]; then
+	   handle_project
+	   if [ $OPER != "delete" ]; then
+	      $0 $WS workon
+	   fi
+	fi
         ;;
     * )
         usage

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ -z $2 ]; then
+   echo "usage: $0 version jarfile"
+   exit -1
+fi
+
+case "$1" in
+	version)
+		jar xf $2 META-INF/MANIFEST.MF && \
+		grep Implementation META-INF/MANIFEST.MF && \
+		rm -rf META-INF
+		;;
+	*)
+		echo "usage: $0 version jarfile"
+		exit -1
+		;;
+esac
+
+exit 0
+

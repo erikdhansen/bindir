@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/usr/local/eclipse/eclipse 2>&1 > /dev/null &
+
